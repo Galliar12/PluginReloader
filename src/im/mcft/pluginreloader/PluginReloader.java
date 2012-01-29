@@ -2,12 +2,17 @@ package im.mcft.pluginreloader;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
@@ -28,7 +33,7 @@ public class PluginReloader extends JavaPlugin {
 	public static final Logger logger = Logger.getLogger("Minecraft");
 
 	@Override
-	public void onDisable() {
+	public final void onDisable() {
 		getServer().getServicesManager().unregisterAll(this);
 		PluginDescriptionFile pdfFile = getDescription();
 		String version = pdfFile.getVersion();
@@ -36,14 +41,14 @@ public class PluginReloader extends JavaPlugin {
 	}
 
 	@Override
-	public void onEnable() {
+	public final void onEnable() {
 		PluginDescriptionFile pdfFile = getDescription();
 		String version = pdfFile.getVersion();
 		log("Version " + version + " enabled", "info");
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+	public final boolean onCommand(final CommandSender sender, final Command cmd, final String commandLabel, final String[] args) {
 		if (cmd.getName().equalsIgnoreCase("plugin")) {
 			if (args.length < 1) {
 				return false;
@@ -65,7 +70,6 @@ public class PluginReloader extends JavaPlugin {
 				return true;
 			}
 
-			// Reload all specified plugins.
 			for (int i = 1; i < args.length; ++i) {
 				String plName = args[i];
 
@@ -74,15 +78,22 @@ public class PluginReloader extends JavaPlugin {
 						unloadPlugin(plName);
 						System.gc(); // Remove the Windows file lock
 						sender.sendMessage(ChatColor.GRAY + "Unloaded " + ChatColor.RED + plName + ChatColor.GRAY + " successfully!");
-					}
-					else if (action.equalsIgnoreCase("load")) {
+						if (sender instanceof Player) {
+							log(sender.getName() + " has unloaded " + plName + ".", "info");
+						}
+					} else if (action.equalsIgnoreCase("load")) {
 						loadPlugin(plName);
 						sender.sendMessage(ChatColor.GRAY + "Loaded " + ChatColor.GREEN + plName + ChatColor.GRAY + " successfully!");
-					}
-					else if (action.equalsIgnoreCase("reload")) {
+						if (sender instanceof Player) {
+							log(sender.getName() + " has loaded " + plName + ".", "info");
+						}
+					} else if (action.equalsIgnoreCase("reload")) {
 						unloadPlugin(plName);
 						loadPlugin(plName);
 						sender.sendMessage(ChatColor.GRAY + "Reloaded " + ChatColor.GREEN + plName + ChatColor.GRAY + " successfully!");
+						if (sender instanceof Player) {
+							log(sender.getName() + " has reloaded " + plName + ".", "info");
+						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -96,8 +107,15 @@ public class PluginReloader extends JavaPlugin {
 		return false;
 	}
 
-	// tries to retrieve the most precise error message
-	private static String getExceptionMessage(Throwable e) {
+	/**
+	 * Retrieves a precise and short error message returing only where something
+	 * went wrong.
+	 * 
+	 * @param e
+	 *            Throwable exception
+	 * @return String Name of class where something went wrong.
+	 */
+	private static String getExceptionMessage(final Throwable e) {
 		if (e.getCause() != null) {
 			String msg = getExceptionMessage(e.getCause());
 			if (!msg.equalsIgnoreCase(e.getClass().getName())) {
@@ -105,43 +123,99 @@ public class PluginReloader extends JavaPlugin {
 			}
 		}
 
-		if (e.getLocalizedMessage() != null)
+		if (e.getLocalizedMessage() != null) {
 			return e.getLocalizedMessage();
-		else if (e.getMessage() != null)
+		} else if (e.getMessage() != null) {
 			return e.getMessage();
-		else if (e.getClass().getCanonicalName() != null)
+		} else if (e.getClass().getCanonicalName() != null) {
 			return e.getClass().getCanonicalName();
-		else
+		} else {
 			return e.getClass().getName();
+		}
 	}
 
+	/**
+	 * Unloads a plugin by name.
+	 * 
+	 * @param pluginName
+	 *            The name of the plugin to unload.
+	 * @throws NoSuchFieldException
+	 *             Unknown field for
+	 *             plugins/lookupNames/commandMap/knownCommands.
+	 * @throws IllegalAccessException
+	 *             Unable to access plugin field(s).
+	 */
 	@SuppressWarnings("unchecked")
-	private void unloadPlugin(String pluginName) throws SecurityException,
-			NoSuchFieldException, IllegalArgumentException,
-			IllegalAccessException {
+	private void unloadPlugin(final String pluginName)
+			throws NoSuchFieldException, IllegalAccessException {
 		PluginManager manager = getServer().getPluginManager();
 		SimplePluginManager spm = (SimplePluginManager) manager;
+		SimpleCommandMap commandMap = null;
 		List<Plugin> plugins = null;
+		Map<String, Plugin> lookupNames = null;
+		Map<String, Command> knownCommands = null;
 
 		if (spm != null) {
 			Field pluginsField = spm.getClass().getDeclaredField("plugins");
 			pluginsField.setAccessible(true);
 			plugins = (List<Plugin>) pluginsField.get(spm);
+
+			Field lookupNamesField = spm.getClass().getDeclaredField("lookupNames");
+			lookupNamesField.setAccessible(true);
+			lookupNames = (Map<String, Plugin>) lookupNamesField.get(spm);
+
+			Field commandMapField = spm.getClass().getDeclaredField("commandMap");
+			commandMapField.setAccessible(true);
+			commandMap = (SimpleCommandMap) commandMapField.get(spm);
+
+			Field knownCommandsField = commandMap.getClass().getDeclaredField("knownCommands");
+			knownCommandsField.setAccessible(true);
+			knownCommands = (Map<String, Command>) knownCommandsField.get(commandMap);
 		}
 
-		// Sometimes plugins load multiple times...
 		for (Plugin pl : manager.getPlugins()) {
 			if (pl.getDescription().getName().equalsIgnoreCase(pluginName)) {
 				manager.disablePlugin(pl);
 				if (plugins != null && plugins.contains(pl)) {
 					plugins.remove(pl);
 				}
+
+				if (lookupNames != null && lookupNames.containsKey(pluginName)) {
+					lookupNames.remove(pluginName);
+				}
+
+				if (commandMap != null) {
+					for (Iterator<Map.Entry<String, Command>> it = knownCommands.entrySet().iterator(); it.hasNext();) {
+						Map.Entry<String, Command> entry = it.next();
+						if (entry.getValue() instanceof PluginCommand) {
+							PluginCommand c = (PluginCommand) entry.getValue();
+							if (c.getPlugin() == pl) {
+								c.unregister(commandMap);
+								it.remove();
+							}
+						}
+					}
+				}
 			}
 		}
 	}
 
-	private void loadPlugin(String pluginName) throws InvalidPluginException,
-			InvalidDescriptionException, UnknownDependencyException {
+	/**
+	 * Loads a plugin by name.
+	 * 
+	 * @param pluginName
+	 *            The name of the plugin to load.
+	 * @throws InvalidPluginException
+	 *             Not a plugin.
+	 * @throws InvalidDescriptionException
+	 *             Invalid description.
+	 * @throws UnknownDependencyException
+	 *             Missing dependency.
+	 * @since 1.0.0
+	 */
+	private void loadPlugin(final String pluginName)
+			throws InvalidPluginException, InvalidDescriptionException,
+			UnknownDependencyException {
 		PluginManager manager = getServer().getPluginManager();
 		Plugin plugin = manager.loadPlugin(new File("plugins", pluginName + ".jar"));
 
