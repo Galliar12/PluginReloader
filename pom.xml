@@ -14,7 +14,7 @@
 	<repositories>
 		<repository>
 			<id>bukkit-repo</id>
-			<url>http://repo.bukkit.org/artifactory/repo</url>
+			<url>http://ci.bukkit.org/plugin/repository/project/dev-CraftBukkit/LastSuccessful/repository/</url>
 		</repository>
 	</repositories>
 	<dependencies>
