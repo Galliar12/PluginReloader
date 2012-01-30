@@ -32,7 +32,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class PluginReloader extends JavaPlugin {
 	public static final Logger logger = Logger.getLogger("Minecraft");
 
-	@Override
 	public final void onDisable() {
 		getServer().getServicesManager().unregisterAll(this);
 		PluginDescriptionFile pdfFile = getDescription();
@@ -40,7 +39,6 @@ public class PluginReloader extends JavaPlugin {
 		log("Version " + version + " is disabled!", "info");
 	}
 
-	@Override
 	public final void onEnable() {
 		PluginDescriptionFile pdfFile = getDescription();
 		String version = pdfFile.getVersion();
