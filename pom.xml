@@ -5,28 +5,25 @@
 	<artifactId>PluginReloader</artifactId>
 	<version>1.0.0</version>
 	<name>PluginReloader</name>
-	<description>A simple plugin used to manage plugins.</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 	<scm>
 		<connection>scm:git:git://github.com/laCour/PluginReloader.git</connection>
 		<url>https://github.com/laCour/PluginReloader</url>
 		<developerConnection>scm:git:git@github.com:laCour/PluginReloader.git</developerConnection>
 	</scm>
-	<repositories>
-		<repository>
-			<id>bukkit-repo</id>
-			<url>http://ci.bukkit.org/plugin/repository/project/dev-Bukkit/LastSuccessful/repository/</url>
-		</repository>
-	</repositories>
-	<dependencies>
-		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>bukkit</artifactId>
-			<version>1.1-R3-SNAPSHOT</version>
-		</dependency>
-	</dependencies>
+
+	<ciManagement>
+		<system>jenkins</system>
+		<url>http://mcft.im/jenkins</url>
+	</ciManagement>
+
 	<build>
-		<finalName>PluginReloader</finalName>
 		<sourceDirectory>${basedir}/src/</sourceDirectory>
+
 		<resources>
 			<resource>
 				<targetPath>.</targetPath>
@@ -37,12 +34,14 @@
 				</includes>
 			</resource>
 		</resources>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -58,13 +57,24 @@
 					</archive>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2-beta-2</version>
 				<configuration>
 					<descriptor>${basedir}/src/assembly/package.xml</descriptor>
 				</configuration>
+				<executions>
+					<execution>
+						<id>release</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
@@ -76,10 +86,19 @@
 			</plugin>
 		</plugins>
 	</build>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-	<organization>
-		<name>Mcft Media</name>
-	</organization>
+	
+	<repositories>
+		<repository>
+			<id>bukkit-repo</id>
+			<url>http://ci.bukkit.org/plugin/repository/project/dev-Bukkit/LastSuccessful/repository/</url>
+		</repository>
+	</repositories>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.bukkit</groupId>
+			<artifactId>bukkit</artifactId>
+			<version>1.1-R3-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
 </project>
