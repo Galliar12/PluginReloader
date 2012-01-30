@@ -5,6 +5,26 @@
 	<artifactId>PluginReloader</artifactId>
 	<version>1.0.0</version>
 	<name>PluginReloader</name>
+	<description>A simple plugin used to manage plugins.</description>
+	<scm>
+		<connection>scm:git:git://github.com/laCour/PluginReloader.git</connection>
+		<url>https://github.com/laCour/PluginReloader</url>
+		<developerConnection>scm:git:git@github.com:laCour/PluginReloader.git</developerConnection>
+	</scm>
+	<repositories>
+		<repository>
+			<id>bukkit-repo</id>
+			<url>http://repo.bukkit.org/artifactory/repo</url>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>org.bukkit</groupId>
+			<artifactId>bukkit</artifactId>
+			<version>1.1-R1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
 	<build>
 		<finalName>PluginReloader</finalName>
 		<sourceDirectory>${basedir}/src/</sourceDirectory>
@@ -38,19 +58,10 @@
 			</plugin>
 		</plugins>
 	</build>
-	<dependencies>
-		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>bukkit</artifactId>
-			<version>1.1-R1-SNAPSHOT</version>
-			<scope>compile</scope>
-		</dependency>
-	</dependencies>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<organization>
 		<name>Mcft Media</name>
 	</organization>
-	<description>A simple plugin used to manage plugins.</description>
 </project>
