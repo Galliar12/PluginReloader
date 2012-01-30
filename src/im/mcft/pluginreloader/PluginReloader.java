@@ -23,7 +23,7 @@ import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * A plugin used to manage other plugins.
+ * A plugin used to load, unload, or reload plugins on your Bukkit server.
  * 
  * @author Jon la Cour
  * @author MadJawa
