@@ -89,8 +89,8 @@
 	
 	<repositories>
 		<repository>
-			<id>bukkit-repo</id>
-			<url>http://ci.bukkit.org/plugin/repository/project/dev-Bukkit/LastSuccessful/repository/</url>
+			<id>bukkit</id>
+			<url>http://repo.bukkit.org/content/groups/public</url>
 		</repository>
 	</repositories>
 	
