@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>im.mcft.pluginreloader</groupId>
 	<artifactId>PluginReloader</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<name>PluginReloader</name>
 
 	<properties>
@@ -98,7 +98,7 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.1-R3-SNAPSHOT</version>
+			<version>1.2.3-R0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

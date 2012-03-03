@@ -5,8 +5,10 @@ import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.logging.Logger;
 
+import org.bukkit.event.Event;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -18,6 +20,7 @@ import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -152,6 +155,8 @@ public class PluginReloader extends JavaPlugin {
 		List<Plugin> plugins = null;
 		Map<String, Plugin> lookupNames = null;
 		Map<String, Command> knownCommands = null;
+		Map<Event, SortedSet<RegisteredListener>> listeners = null;
+		boolean reloadlisteners = true;
 
 		if (spm != null) {
 			Field pluginsField = spm.getClass().getDeclaredField("plugins");
@@ -161,6 +166,15 @@ public class PluginReloader extends JavaPlugin {
 			Field lookupNamesField = spm.getClass().getDeclaredField("lookupNames");
 			lookupNamesField.setAccessible(true);
 			lookupNames = (Map<String, Plugin>) lookupNamesField.get(spm);
+
+			try {
+				Field listenersField = spm.getClass().getDeclaredField("listeners");
+				listenersField.setAccessible(true);
+				listeners = (Map<Event, SortedSet<RegisteredListener>>) listenersField.get(spm);
+			} catch (Exception e) {
+				log("Plugin has no listeners!", "info");
+				reloadlisteners = false;
+			}
 
 			Field commandMapField = spm.getClass().getDeclaredField("commandMap");
 			commandMapField.setAccessible(true);
@@ -180,6 +194,18 @@ public class PluginReloader extends JavaPlugin {
 
 				if (lookupNames != null && lookupNames.containsKey(pluginName)) {
 					lookupNames.remove(pluginName);
+				}
+
+				if (listeners != null && reloadlisteners) {
+					for (SortedSet<RegisteredListener> set : listeners.values()) {
+						for (Iterator<RegisteredListener> it = set.iterator(); it.hasNext();) {
+							RegisteredListener value = it.next();
+
+							if (value.getPlugin() == pl) {
+								it.remove();
+							}
+						}
+					}
 				}
 
 				if (commandMap != null) {
